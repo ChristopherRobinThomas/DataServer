@@ -1,7 +1,16 @@
+import requests
 import streamlit as st
 import pandas as pd
 import numpy as np
 
+URL="http://localhost:9000"
+def getServers():
+    resp = requests.get(f"{URL}/servers")
+    return resp.json()
+
+servers = getServers()
+for elem in servers:
+    print(type(elem), elem)
 all_dates = ["2026_11_1_22", "2026_11_1_24"]
 date = st.selectbox("Dates", all_dates)
 

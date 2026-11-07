@@ -18,7 +18,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /servers", listServers)
 	mux.HandleFunc("GET /entries/{name}", listEntries)
+	mux.HandleFunc("GET /runs/{date}/{server}", listRuns)
 
-	log.Println("Server listening on :8080...")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	log.Println("Server listening on :9000...")
+	log.Fatal(http.ListenAndServe(":9000", mux))
 }
