@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -26,17 +27,17 @@ type Server struct {
 }
 
 type Run struct {
-	name   string
-	entry  int
-	all    float32
-	cpu    float32
-	memory float32
-	io     float32
-	system float32
-	mt     float32
-	st     float32
-	os     float32
-	sleep  float32
+	name    string
+	entry   int
+	overall float32
+	cpu     float32
+	memory  float32
+	io      float32
+	system  float32
+	mt      float32
+	st      float32
+	os      float32
+	sleep   float32
 }
 
 func connect(info dbInfo) *sql.DB {
@@ -49,7 +50,7 @@ func connect(info dbInfo) *sql.DB {
 }
 
 func insertEntry(db *sql.DB, entry Entry) {
-	rows, err := db.Query(fmt.Sprintf("INSERT INTO entries (server, date) VALUES (%s,%s)", entry.server, entry.date))
+	rows, err := db.Query(fmt.Sprintf("INSERT INTO entries (server, date) VALUES (%d,'%s');", entry.server, entry.date))
 	if err != nil {
 		log.Fatalf("Query failed: %v", err)
 	}
@@ -57,7 +58,7 @@ func insertEntry(db *sql.DB, entry Entry) {
 }
 
 func insertServer(db *sql.DB, server Server) {
-	rows, err := db.Query(fmt.Sprintf("INSERT INTO servers (name, addr, dir, arch) VALUES", server.name, server.addr, server.dir, server.arch))
+	rows, err := db.Query(fmt.Sprintf("INSERT INTO servers (name, addr, dir, arch) VALUES('%s', '%s', '%s', '%s');", server.name, server.addr, server.dir, server.arch))
 	if err != nil {
 		log.Fatalf("Query failed: %v", err)
 	}
@@ -65,10 +66,11 @@ func insertServer(db *sql.DB, server Server) {
 }
 
 func insertRun(db *sql.DB, run Run) {
-	rows, err := db.Query(fmt.Sprintf("INSERT INTO run (name, entry, all, cpu, memory, io, system, mt, st, os, sleep) VALUES (%s,%d,%v,%v,%v,%v,%v,%v,%v,%v,%v,)",
+	rows, err := db.Query(fmt.Sprintf("INSERT INTO runs (name, entry, overall, cpu, memory, io, system, mt, st, os, sleep) VALUES ('%s',%d,%v,%v,%v,%v,%v,%v,%v,%v,%v);",
 		run.name,
 		run.entry,
-		run.all,
+		run.overall,
+		run.cpu,
 		run.memory,
 		run.io,
 		run.system,
@@ -84,7 +86,7 @@ func insertRun(db *sql.DB, run Run) {
 }
 
 func getRunsByEntry(db *sql.DB, entryId int) []Run {
-	rows, err := db.Query("SELECT entry, name, all, memory, io, system, mt, st, os, sleep FROM runs WHERE entry == %d", entryId)
+	rows, err := db.Query(fmt.Sprintf("SELECT entry, name, overall, memory, io, system, mt, st, os, sleep FROM runs WHERE entry = %d;", entryId))
 	if err != nil {
 		log.Fatalf("Query failed: %v", err)
 	}
@@ -95,7 +97,7 @@ func getRunsByEntry(db *sql.DB, entryId int) []Run {
 		err := rows.Scan(
 			&run.entry,
 			&run.name,
-			&run.all,
+			&run.overall,
 			&run.memory,
 			&run.io,
 			&run.system,
@@ -113,7 +115,7 @@ func getRunsByEntry(db *sql.DB, entryId int) []Run {
 }
 
 func getEntriesByServer(db *sql.DB, serverId int) []Entry {
-	rows, err := db.Query("SELECT server, date FROM entries WHERE entry == %d", serverId)
+	rows, err := db.Query(fmt.Sprintf("SELECT server, date FROM entries WHERE entry = %d;", serverId))
 	if err != nil {
 		log.Fatalf("Query failed: %v", err)
 	}
@@ -134,7 +136,7 @@ func getEntriesByServer(db *sql.DB, serverId int) []Entry {
 }
 
 func getServers(db *sql.DB) []Server {
-	rows, err := db.Query("SELECT addr, arch, dir, name FROM servers")
+	rows, err := db.Query("SELECT addr, arch, dir, name FROM servers;")
 	if err != nil {
 		log.Fatalf("Query failed: %v", err)
 	}
@@ -154,4 +156,43 @@ func getServers(db *sql.DB) []Server {
 		arr = append(arr, server)
 	}
 	return arr
+}
+
+func getEntryIdByDate(db *sql.DB, date string, server int) (int, error) {
+	rows, err := db.Query(fmt.Sprintf("SELECT id, date, server FROM entries WHERE date = '%s' AND server = %d;", date, server))
+	if err != nil {
+		log.Fatalf("Query failed: %v", err)
+	}
+	defer rows.Close()
+	var id int = -1
+	var d string
+	var s int
+	for rows.Next() {
+		err := rows.Scan(&id, &d, &s)
+		if err != nil {
+			log.Fatalf("Scan failed: %v", err)
+			return id, errors.New("Can not find entry")
+		}
+		return id, nil
+	}
+	return id, errors.New("Can not find entry")
+}
+
+func getServerByName(db *sql.DB, name string) (int, error) {
+	rows, err := db.Query(fmt.Sprintf("SELECT id, name FROM servers WHERE name = '%s';", name))
+	if err != nil {
+		log.Fatalf("Query failed: %v", err)
+	}
+	defer rows.Close()
+	var id int = -1
+	var n string
+	for rows.Next() {
+		err := rows.Scan(&id, &n)
+		if err != nil {
+			log.Fatalf("Scan failed: %v", err)
+			return id, errors.New("Can not find server")
+		}
+		return id, nil
+	}
+	return id, errors.New("Can not find server")
 }

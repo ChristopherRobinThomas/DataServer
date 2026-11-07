@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS servers (
 	name TEXT NOT NULL,
 	addr TEXT NOT NULL,
 	dir TEXT NOT NULL,
-	arch TEXT NOT NULL,
+	arch TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS entries (
@@ -11,23 +11,23 @@ CREATE TABLE IF NOT EXISTS entries (
 	server SERIAL NOT NULL,
 	date TEXT NOT NULL,
 
-	FOREIGN KEY (server) REFERENCES servers(id),
+	FOREIGN KEY (server) REFERENCES servers(id)
 );
 
-CREATE TABLE IF NOT EXITS runs(
+CREATE TABLE IF NOT EXISTS runs(
 	id SERIAL PRIMARY KEY,
 	name TEXT NOT NULL,
 
 	entry SERIAL NOT NULL,
-	all FLOAT NOT NULL, 
+	overall FLOAT NOT NULL, 
 	cpu FLOAT NOT NULL, 
 	memory FLOAT NOT NULL, 
 	io FLOAT NOT NULL, 
-	sytstem FLOAT NOT NULL, 
+	system FLOAT NOT NULL, 
 	mt FLOAT NOT NULL, 
 	st FLOAT NOT NULL, 
 	os FLOAT NOT NULL, 
 	sleep FLOAT NOT NULL, 
 
-	FOREIGN KEY (entry) REFERENCES entries(id),
+	FOREIGN KEY (entry) REFERENCES entries(id)
 );

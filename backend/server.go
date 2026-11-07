@@ -7,11 +7,11 @@ import (
 func tmp(resp http.ResponseWriter, req *http.Request) {}
 
 func main() {
-	connect(dbinfo{"user", "1234"})
 	//info := extractSshInfo()
 	//executeSshCommand(info)
 	//downloadViaCat(info, "./data/results.json")
-	//jsonReader("./data/results.json")
+	db := connect(dbInfo{"user", "1234"})
+	jsonReader("./data/results.json", db)
 
 	//mux := http.NewServeMux()
 	//mux.HandleFunc("GET /dates", tmp)
