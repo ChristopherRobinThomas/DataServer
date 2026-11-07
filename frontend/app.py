@@ -8,14 +8,42 @@ def getServers():
     resp = requests.get(f"{URL}/servers")
     return resp.json()
 
-servers = getServers()
-for elem in servers:
-    print(type(elem), elem)
-all_dates = ["2026_11_1_22", "2026_11_1_24"]
-date = st.selectbox("Dates", all_dates)
+def getEntries(date):
+    resp = requests.get(f"{URL}/entries/{date}")
+    return resp.json()
 
-st.write("Hello World")
-data = pd.DataFrame(np.random.randn(3, 1))
-tab1, tab2 = st.tabs(["bar","plot"])
-tab1.bar_chart(data, height=300)
-tab2.line_chart(data, height=300)
+def getRuns(date, serverID):
+    print(f"{URL}/runs/{date}/{serverID}")
+    resp = requests.get(f"{URL}/runs/{date}/{serverID}")
+    return resp.json()
+
+servers = getServers()
+server_names = [] 
+for elem in servers:
+    server_names.append(elem["name"])
+
+selected_servers = st.multiselect("Choose severs", server_names, default=["oscip05"])
+entry_lists = []
+
+for s in selected_servers:
+    res = getEntries(s)
+    entry_lists.append(res)
+
+selected_dates_per_server = []
+selected_serverID_per_server = []
+for i in range(len(selected_servers)):
+    date_list = []
+    server_list = []
+    for elem in entry_lists[i]:
+        date_list.append(elem["date"])
+        server_list.append(elem["server"])
+
+    selected_dates = st.multiselect(f"Choose Dates for servers:{server_names[i]}", date_list)
+    selected_dates_per_server.append(selected_dates)
+    selected_serverID_per_server.append(server_list)
+
+for i in range(len(selected_dates_per_server)):
+    serverName = selected_servers[i]
+    for j in range(len(selected_dates_per_server[i])):
+        data = getRuns(selected_dates_per_server[i][j], selected_serverID_per_server[i][j])
+        st.info(data)
