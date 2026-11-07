@@ -1,20 +1,24 @@
 package main
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
 )
 
-func tmp(resp http.ResponseWriter, req *http.Request) {}
+var db *sql.DB
 
 func main() {
-	//info := extractSshInfo()
-	//executeSshCommand(info)
-	//downloadViaCat(info, "./data/results.json")
-	db := connect(dbInfo{"user", "1234"})
-	jsonReader("./data/results.json", db)
+	// info := extractSshInfo()
+	// executeSshCommand(info)
+	// downloadViaCat(info, "./data/results.json")
+	// jsonReader("./data/results.json")
+	db = connect(dbInfo{"user", "1234"})
 
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("GET /dates", tmp)
-	//mux.HandleFunc("GET /servers", tmp)
-	//mux.HandleFunc("POST /servers", tmp)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /servers", listServers)
+	mux.HandleFunc("GET /entries/{name}", listEntries)
+
+	log.Println("Server listening on :8080...")
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }

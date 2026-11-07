@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -179,7 +178,7 @@ func downloadViaCat(info sshInfo, localPath string) error {
 	return localFile.Sync()
 }
 
-func jsonReader(path string, db *sql.DB) {
+func jsonReader(path string) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -193,12 +192,12 @@ func jsonReader(path string, db *sql.DB) {
 	serverId := 1 // Hardcoded for now
 	for key := range data {
 		entry := Entry{
-			server: serverId,
-			date:   key,
+			Server: serverId,
+			Date:   key,
 		}
 
-		insertEntry(db, entry)
-		entryId, err := getEntryIdByDate(db, key, serverId)
+		insertEntry(entry)
+		entryId, err := getEntryIdByDate(key, serverId)
 		if err != nil {
 			log.Fatalf("%v", err)
 		}
@@ -219,19 +218,19 @@ func jsonReader(path string, db *sql.DB) {
 				continue
 			}
 			r := Run{
-				name:    row[0].(string),
-				entry:   entryId,
-				overall: float32(row[1].(float64)), // cast float64 -> float32
-				cpu:     float32(row[2].(float64)),
-				memory:  float32(row[3].(float64)),
-				io:      float32(row[4].(float64)),
-				system:  float32(row[5].(float64)),
-				mt:      float32(row[6].(float64)),
-				st:      float32(row[7].(float64)),
-				os:      float32(row[8].(float64)),
-				sleep:   float32(row[9].(float64)),
+				Name:    row[0].(string),
+				Entry:   entryId,
+				Overall: float32(row[1].(float64)), // cast float64 -> float32
+				Cpu:     float32(row[2].(float64)),
+				Memory:  float32(row[3].(float64)),
+				Io:      float32(row[4].(float64)),
+				System:  float32(row[5].(float64)),
+				Mt:      float32(row[6].(float64)),
+				St:      float32(row[7].(float64)),
+				Os:      float32(row[8].(float64)),
+				Sleep:   float32(row[9].(float64)),
 			}
-			insertRun(db, r)
+			insertRun(r)
 		}
 	}
 }
