@@ -1,5 +1,5 @@
 # TODO
 - Sort dates
-- Plot graphs, as bar and linegraph
-- toggle mulivariables
-
+- Sort graphs if possible
+- Make names fit
+- toggle mulivariables benchmarks
