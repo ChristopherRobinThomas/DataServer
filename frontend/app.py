@@ -44,6 +44,15 @@ for i in range(len(selected_servers)):
 
 for i in range(len(selected_dates_per_server)):
     serverName = selected_servers[i]
+    st.info(f"For server{serverName}")
     for j in range(len(selected_dates_per_server[i])):
+        st.info(f"For and date{selected_dates_per_server[i][j]}")
         data = getRuns(selected_dates_per_server[i][j], selected_serverID_per_server[i][j])
-        st.info(data)
+        X = [run["overall"] for run in data]
+        df = pd.DataFrame({
+            "names": [run["name"] for run in data],
+            "overall": [run["overall"] for run in data],
+        })
+        line, bar = st.tabs(["line", "bar"])
+        line.line_chart(df, x="names", y="overall")
+        bar.bar_chart(df, x="names", y="overall")
