@@ -27,6 +27,7 @@ entry_lists = []
 
 for s in selected_servers:
     res = getEntries(s)
+    res.sort(key=lambda x: x["date"], reverse=True)
     entry_lists.append(res)
 
 selected_dates_per_server = []
